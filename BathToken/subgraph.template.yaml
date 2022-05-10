@@ -1,0 +1,88 @@
+specVersion: 0.0.3
+description: Rubicon Pools is a novel liquidity mechanism used within the World's First Permissionless Open Order Book
+repository: https://github.com/RubiconDeFi/rubicon_subgraph
+schema: 
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum/contract
+    name: BathHouse
+    network: {{ network }}
+    source: 
+      address: '{{ BathHouse-address }}'
+      abi: BathHouse
+    mapping: 
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./mappings/BathHouse.ts
+      entities: 
+        - BathHouse
+      abis: 
+        - name: BathHouse
+          file: ./abis/BathHouse.json
+      eventHandlers: 
+        - event: LogNewBathToken(address,address,address,uint256,address)
+          handler: handlePoolCreated
+  - kind: ethereum/contract
+    name: RubiconMarket
+    network: {{ network }}
+    source: 
+      address: '{{ RubiconMarket-address }}'
+      abi: RubiconMarket
+    mapping: 
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./mappings/RubiconMarket.ts
+      entities: 
+        - PoolBuffer
+        - PoolBufferDay
+        - PoolBufferHour
+      abis: 
+        - name: RubiconMarket
+          file: ./abis/RubiconMarket.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers: 
+        - event: LogTake(bytes32,indexed bytes32,indexed address,address,address,indexed address,uint128,uint128,uint64)
+          handler: handleLogTake
+templates: 
+  - kind: ethereum/contract
+    name: BathToken
+    network: {{ network }}
+    source: 
+      abi: BathToken
+    mapping: 
+      kind: ethereum/events
+      apiVersion: 0.0.5
+      language: wasm/assemblyscript
+      file: ./mappings/BathToken.ts
+      entities: 
+        - Pool
+        - Deposit
+        - Withdraw
+        - PoolBuffer
+        - PoolBufferDay
+        - PoolBufferHour
+        - PoolDayData
+        - PoolHourData
+        - poolPosition
+        - liquidityProvider
+      abis: 
+        - name: BathToken
+          file: ./abis/BathToken.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+      eventHandlers: 
+        - event: LogDeposit(uint256,address,uint256,address,uint256,uint256,uint256)
+          handler: handleDeposit
+        - event: LogWithdraw(uint256,address,uint256,address,uint256,address,uint256,uint256,uint256)
+          handler: handleWithdraw
+        - event: LogRebalance(address,address,address,uint256,uint256,uint256,uint256,uint256)
+          handler: handleRebalance
+        - event: LogPoolCancel(uint256,address,uint256,uint256,uint256,uint256)
+          handler: handlePoolCancel
+        - event: LogPoolOffer(uint256,address,uint256,uint256,uint256)
+          handler: handlePoolOffer 
+        - event: LogRemoveFilledTradeAmount(address,uint256,uint256,uint256,uint256)
+          handler: handleLogRemoveFilledTradeAmount

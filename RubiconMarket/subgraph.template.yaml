@@ -1,0 +1,109 @@
+specVersion: 0.0.3
+description: RubiconMarket
+repository: https://github.com/RubiconDeFi/rubicon_subgraph
+schema: 
+  file: ./schema.graphql
+dataSources: 
+  - kind: ethereum/contract
+    name: RubiconMarket
+    network: {{ network }}
+    source: 
+      address: '{{ RubiconMarket-address }}'
+      abi: RubiconMarket
+    mapping: 
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./mappings/RubiconMarket.ts
+      entities: 
+        - RubiconMarket
+        - RubiconDayData
+        - RubiconHourData
+        - Transaction
+        - Token
+        - DayToken
+        - HourToken
+        - FullPair
+        - Pair
+        - MonthPair
+        - WeekPair
+        - DayPair
+        - HourPair
+        - User
+        - Offer
+        - OpenOffer
+        - Taker
+        - Trade
+        - AssetPriceETH
+        - AssetPriceUSD
+        - HistoricalAssetPriceETH
+        - HistoricalAssetPriceUSD
+      abis: 
+        - name: RubiconMarket
+          file: ./abis/RubiconMarketOptimism.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: TokenWithFaucet
+          file: ./abis/TokenWithFaucet.json
+      eventHandlers: 
+        - event: LogSetOwner(indexed address)
+          handler: handleLogSetOwner
+        - event: LogMake(indexed bytes32,indexed bytes32,indexed address,address,address,uint128,uint128,uint64)
+          handler: handleLogMake
+        - event: LogTake(bytes32,indexed bytes32,indexed address,address,address,indexed address,uint128,uint128,uint64)
+          handler: handleLogTake
+        - event: LogKill(indexed bytes32,indexed bytes32,indexed address,address,address,uint128,uint128,uint64)
+          handler: handleLogKill
+        - event: FeeTake(bytes32,indexed bytes32,address,indexed address,address,uint256,uint64)
+          handler: handleFeeTake
+        - event: OfferDeleted(uint256)
+          handler: handleOfferDeleted
+        - event: LogMatch(uint256,uint256)
+          handler: handleLogMatch
+  - kind: ethereum/contract
+    name: RubiconRouter
+    network: {{ network }}
+    source: 
+      address: '{{ RubiconRouter-address }}'
+      abi: RubiconRouter
+    mapping: 
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      file: ./mappings/RubiconMarket.ts
+      entities: 
+        - RubiconMarket
+        - RubiconDayData
+        - RubiconHourData
+        - Transaction
+        - Token
+        - DayToken
+        - HourToken
+        - FullPair
+        - Pair
+        - MonthPair
+        - WeekPair
+        - DayPair
+        - HourPair
+        - User
+        - Offer
+        - OpenOffer
+        - Trade
+        - Swap
+        - AssetPriceETH
+        - AssetPriceUSD
+        - HistoricalAssetPriceETH
+        - HistoricalAssetPriceUSD
+      abis: 
+        - name: RubiconRouter
+          file: ./abis/RubiconRouterOptimism.json
+        - name: ERC20
+          file: ./abis/ERC20.json
+        - name: TokenWithFaucet
+          file: ./abis/TokenWithFaucet.json
+      eventHandlers: 
+        - event: LogSwap(uint256,address,uint256,address,indexed bytes32,uint256,address)
+          handler: handleSwap
+
+          
+      

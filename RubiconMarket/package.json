@@ -1,0 +1,24 @@
+{
+    "name":"rubicon-market-subgraph",
+    "version":"1.0.0",
+    "author":"Denver",
+    "scripts":{
+        "prepare:optimism":"mustache config/optimism.json subgraph.template.yaml > subgraph.yaml",
+        "prepare:kovan-test":"mustache config/kovan-test.json subgraph.template.yaml > subgraph.yaml",
+        "prepare:mumbai":"mustache config/mumbai.json subgraph.template.yaml > subgraph.yaml",
+        "codegen":"graph codegen",
+        "deploy:optimism":"graph deploy --product hosted-service denverbaumgartner/RubiconMarketOptimism",
+        "deploy:optimism-dev":"graph deploy --product hosted-service denverbaumgartner/DevRubiconMarketOptimism",
+        "deploy:kovan":"graph deploy --product hosted-service denverbaumgartner/RubiconMarket",
+        "deploy:mumbai":"graph deploy --product hosted-service denverbaumgartner/RubiconMarketMumbai",
+        "build":"graph build",
+        "deploy":"graph deploy --node https://api.thegraph.com/deploy/denverbaumgartner/RubiconMarket",
+        "create-local":"graph create --node http://localhost:8020/ RubiconMarket",
+        "remove-local":"graph remove --node http://localhost:8020/ RubiconMarket",
+        "deploy-local":"graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 RubiconMarket"
+        },
+    "devDependencies":{
+        "@graphprotocol/graph-cli":"^0.28.0",
+        "@graphprotocol/graph-ts":"^0.26.0",
+        "mustache":"^3.1.0"}
+}

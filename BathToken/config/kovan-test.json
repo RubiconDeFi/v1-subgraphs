@@ -1,0 +1,7 @@
+{
+    "network": "optimism-kovan",
+    "RubiconMarket-address": "0x15Db07A69F42a7c83e792fAc0776E710CdCD3F3f", 
+    "RubiconRouter-address": "0x8316F9a27e6F632a54D1E1F21aF347D4E0Cc38Dd", 
+    "BathHouse-address": "0x68B5fBd7CEFEE3076e4101920b13C9Cc1A6cbF0e",
+    "BathPair-address": "0x45Da67AAAAa0164cC2f8789CE1B9EAcEABE70c51"
+}

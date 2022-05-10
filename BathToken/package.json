@@ -1,0 +1,21 @@
+{ 
+    "name": "bath-token-subgraph",
+    "version": "1.0.0", 
+    "author": "Denver",
+    "scripts": {
+        "prepare:kovan": "mustache config/kovan.json subgraph.template.yaml > subgraph.yaml",
+        "prepare:kovan-test": "mustache config/kovan-test.json subgraph.template.yaml > subgraph.yaml",
+        "prepare:mumbai": "mustache config/mumbai.json subgraph.template.yaml > subgraph.yaml",
+        "codegen": "graph codegen", 
+        "build": "graph build",
+        "deploy": "graph deploy --node https://api.thegraph.com/deploy/denverbaumgartner/BathToken",
+        "create-local": "graph create --node http://localhost:8020/ BathToken",
+        "remove-local": "graph remove --node http://localhost:8020/ BathToken",
+        "deploy-local": "graph deploy --node http://localhost:8020/ --ipfs http://localhost:5001 BathToken"
+    },
+    "devDependencies": {
+        "@graphprotocol/graph-cli": "^0.20.0",
+        "@graphprotocol/graph-ts": "^0.20.0",
+        "mustache": "^3.1.0"
+    }
+}

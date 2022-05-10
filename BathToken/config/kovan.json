@@ -1,0 +1,7 @@
+{
+    "network": "optimism",
+    "BathHouse-address": "0x203328C161D23dCEee3E439DeEB25cA19e2c4984", 
+    "BathPair-address": "0xF8780E00Ce8ed2e79aeC10908a169900eD1D4AFe",
+    "RubiconMarket-address": "0x7a512d3609211e719737E82c7bb7271eC05Da70d", 
+    "startblock": "1"
+}

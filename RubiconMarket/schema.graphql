@@ -1,0 +1,607 @@
+type RubiconMarket @entity { 
+    " <market address> "
+    id: ID!
+    " tokens available "
+    tokenCount: BigInt!
+    " all time number of trading pairs on the platform "
+    pairCount: BigInt!
+    " all time amount of trade transactions "
+    txCount: BigInt!
+    " all time amount of unique users "
+    userCount: BigInt!
+    " all tokens on platform "
+    tokens: [Token!]! @derivedFrom(field: "market")
+    " all pairs on platform "
+    pairs: [Pair!]! @derivedFrom(field: "market")
+}
+
+type RubiconDayData @entity { 
+    " <market address>#<timestamp rounded to current day by dividing by 86400> "
+    id: ID!
+    " timestamp"
+    date: BigInt!
+    " amount of trade transactions that day "
+    txCount: BigInt!
+    " amount of new users that day  "
+    newUserCount: BigInt!
+    " token metrics on that day "
+    dayTokens: [DayToken!]! @derivedFrom(field: "market")
+    " pair metrics on that day "
+    dayPairs: [DayPair!]! @derivedFrom(field: "market")
+    " hourly data for Rubicon Market "
+    marketHours: [RubiconHourData!]! @derivedFrom(field: "market")
+} 
+
+type RubiconHourData @entity { 
+    " <market address>#<timestamp rounded to current hour by dividing by 3600> "
+    id: ID!
+    " timestamp "
+    date: BigInt!
+    " point to RubiconDayData entity "
+    market: RubiconDayData!
+    " amount of trade transactions that hour "
+    txCount: BigInt!
+    " amount of new users that hour  "
+    newUserCount: BigInt!
+    " token metrics on that day "
+    hourTokens: [HourToken!]! @derivedFrom(field: "market")
+    " pair metrics on that day "
+    hourPairs: [HourPair!]! @derivedFrom(field: "market")
+} 
+
+type Transaction @entity {
+    " <txn hash> "
+    id: ID!
+    " block txn was included in "
+    blockNumber: BigInt!
+    " timestamp txn was confirmed "
+    timestamp: BigInt!
+    " gas used during txn execution "
+    gasUsed: BigInt!
+    gasPrice: BigInt!
+    " derived values "
+    swaps: [Swap!]! @derivedFrom(field: "transaction")
+    openOffers: [OpenOffer!]! @derivedFrom(field: "transaction")
+    offers: [Offer!]! @derivedFrom(field: "transaction")
+    takers: [Taker!]! @derivedFrom(field: "transaction")
+    trades: [Trade!]! @derivedFrom(field: "transaction")
+}
+
+#token data and metrics
+type Token @entity { 
+    " <token address> "
+    id: ID!
+    " market entity "
+    market: RubiconMarket!
+    " first started trading at "
+    startAtTimestamp: BigInt!
+    " block in which token first started trading "
+    startBlockNumber: BigInt!
+    " token symbol "
+    symbol: String!
+    " token name "
+    name: String!
+    " token decimals "
+    decimals: Int!
+    " volume in token units "
+    volume: BigInt!
+    " total number of transactions involving that token "
+    txCount: BigInt!
+    " total fees collected for this token "
+    tokenFees: BigInt!
+    " token metrics on that day "
+    dayTokens: [DayToken!]! @derivedFrom(field: "token")
+    " token metrics for that hour "
+    hourTokens:  [HourToken!]! @derivedFrom(field: "token")
+} 
+
+# token data and metrics per day 
+type DayToken @entity { 
+    " <token address>#<timestamp rounded to current day by dividing by 86400> "
+    id: ID!
+    " market entity "
+    market: RubiconDayData!
+    " first started trading at "
+    startAtTimestamp: BigInt!
+    " block in which token first started trading "
+    startBlockNumber: BigInt!
+    " token entity "
+    token: Token!
+    " token symbol "
+    symbol: String!
+    " token name "
+    name: String!
+    " token decimals "
+    decimals: Int!
+    " volume in token units "
+    volume: BigInt!
+    " total number of trades in that token "
+    txCount: BigInt!
+    " total fees collected for this token "
+    dayTokenFees: BigInt!
+} 
+
+# token data and metrics per Hour
+type HourToken @entity { 
+    " <token address>#<timestamp rounded to current day by dividing by 3600> "
+    id: ID!
+    " market entity "
+    market: RubiconHourData!
+    " first started trading at "
+    startAtTimestamp: BigInt!
+    " block in which token first started trading "
+    startBlockNumber: BigInt!
+    " token entity "
+    token: Token!
+    " token symbol "
+    symbol: String!
+    " token name "
+    name: String!
+    " token decimals "
+    decimals: Int!
+    " volume in token units "
+    volume: BigInt!
+    " total number of trades in that token "
+    txCount: BigInt!
+    " total fees collected for this token "
+    hourTokenFees: BigInt!
+} 
+
+type FullPair @entity {
+    " <token0 address>#<token1 address> "
+    id: ID!
+    " <pay_token = token0>#<buy_token = token1> "
+    pair0: Pair
+    " <pay_token = token1>#<buy_token = token0> "
+    pair1: Pair
+    " last trade across the pair "
+    lastTrade: Trade
+    " map to all trades across the pair "
+    trades: [Trade!]! @derivedFrom(field: "fullPair")
+}
+
+type Pair @entity { 
+    " <pay_token address>#<buy_token address> "
+    id: ID!
+    " market entity "
+    market: RubiconMarket!
+    " first started trading at "
+    startAtTimestamp: BigInt!
+    " block in which pair first started trading "
+    startBlockNumber: BigInt!
+    " pay_token "
+    pay_token: Token!
+    " buy_token "
+    buy_token: Token!
+    " pay_token price - most recent trade price derived from buy_token "
+    pricePayToken: BigDecimal!
+    " buy_token price - most recent trade price derived from pay_token "
+    priceBuyToken: BigDecimal!
+    " volume in pay_token "
+    volumePayToken: BigInt!
+    " volume in buy_token "
+    volumeBuyToken: BigInt!
+    " total number of trades of that pair "
+    txCount: BigInt!
+    " total fees collected of pay_token for this pair "
+    payTokenFees: BigInt!
+    " total fees collected of buy_token for this pair "
+    buyTokenFees: BigInt!
+    " token metrics on that day "
+    dayPairs: [DayPair!]! @derivedFrom(field: "pair")
+    " token metrics for that hour "
+    hourPairs:  [HourPair!]! @derivedFrom(field: "pair")
+    " derived values "
+    swaps: [Swap!]! @derivedFrom(field: "pair")
+    openOffers: [OpenOffer!]! @derivedFrom(field: "pair")
+    offers: [Offer!]! @derivedFrom(field: "pair")
+    takers: [Taker!]! @derivedFrom(field: "pair")
+    trades: [Trade!]! @derivedFrom(field: "pair")
+} 
+
+type MonthPair @entity { 
+    " <pay_token address>#<buy_token address>#<timestamp rounded to current day by dividing by 2629743> "
+    id: ID!
+    " market entity "
+    market: RubiconMarket!
+    " first started trading at " 
+    startAtTimestamp: BigInt!
+    " block in which token first started trading "
+    startBlockNumber: BigInt!
+    " pair that it belongs to "
+    pair: Pair!
+    " pay_token "
+    pay_token: Token!
+    " buy_token "
+    buy_token: Token!
+    " pay_token price - most recent trade price derived from buy_token "
+    pricePayToken: BigDecimal!
+    " buy_token price - most recent trade price derived from pay_token "
+    priceBuyToken: BigDecimal!
+    " volume in pay_token "
+    volumePayToken: BigInt!
+    " volume in buy_token "
+    volumeBuyToken: BigInt!
+    " total number of trades of that pair "
+    txCount: BigInt!
+    " total fees collected of pay_token for this pair "
+    payTokenFees: BigInt!
+    " total fees collected of buy_token for this pair "
+    buyTokenFees: BigInt!
+    " derived values"
+    trades: [Trade!]! @derivedFrom(field: "monthPair")
+} 
+
+type WeekPair @entity { 
+    " <pay_token address>#<buy_token address>#<timestamp rounded to current day by dividing by 604800> "
+    id: ID!
+    " market entity "
+    market: RubiconMarket!
+    " first started trading at "
+    startAtTimestamp: BigInt!
+    " block in which token first started trading "
+    startBlockNumber: BigInt!
+    " pair that it belongs to "
+    pair: Pair!
+    " pay_token "
+    pay_token: Token!
+    " buy_token "
+    buy_token: Token!
+    " pay_token price - most recent trade price derived from buy_token "
+    pricePayToken: BigDecimal!
+    " buy_token price - most recent trade price derived from pay_token "
+    priceBuyToken: BigDecimal!
+    " volume in pay_token "
+    volumePayToken: BigInt!
+    " volume in buy_token "
+    volumeBuyToken: BigInt!
+    " total number of trades of that pair "
+    txCount: BigInt!
+    " total fees collected of pay_token for this pair "
+    payTokenFees: BigInt!
+    " total fees collected of buy_token for this pair "
+    buyTokenFees: BigInt!
+    " derived values "
+    trades: [Trade!]! @derivedFrom(field: "weekPair")
+} 
+
+type DayPair @entity { 
+    " <pay_token address>#<buy_token address>#<timestamp rounded to current day by dividing by 86400> "
+    id: ID!
+    " market entity "
+    market: RubiconDayData!
+    " first started trading at "
+    startAtTimestamp: BigInt!
+    " block in which token first started trading "
+    startBlockNumber: BigInt!
+    " pair that it belongs to "
+    pair: Pair!
+    " pay_token "
+    pay_token: Token!
+    " buy_token "
+    buy_token: Token!
+    " pay_token day statistics "
+    dayPayToken: DayToken!
+    " buy_token day statistics "
+    dayBuyToken: DayToken!
+    " pay_token price - most recent trade price derived from buy_token "
+    pricePayToken: BigDecimal!
+    " buy_token price - most recent trade price derived from pay_token "
+    priceBuyToken: BigDecimal!
+    " volume in pay_token "
+    volumePayToken: BigInt!
+    " volume in buy_token "
+    volumeBuyToken: BigInt!
+    " total number of trades of that pair "
+    txCount: BigInt!
+    " total fees collected of pay_token for this pair "
+    payTokenFees: BigInt!
+    " total fees collected of buy_token for this pair "
+    buyTokenFees: BigInt!
+    " derived values "
+    swaps: [Swap!]! @derivedFrom(field: "dayPair")
+    openOffers: [OpenOffer!]! @derivedFrom(field: "dayPair")
+    offers: [Offer!]! @derivedFrom(field: "dayPair")
+    takers: [Taker!]! @derivedFrom(field: "dayPair")
+    trades: [Trade!]! @derivedFrom(field: "dayPair")
+} 
+
+type HourPair @entity { 
+    " <pay_token address>#<buy_token address>#<timestamp rounded to current day by dividing by 3600> "
+    id: ID!
+    " market entity "
+    market: RubiconHourData!
+    " first started trading at "
+    startAtTimestamp: BigInt!
+    " block in which token first started trading "
+    startBlockNumber: BigInt!
+    " pair that it belongs to "
+    pair: Pair!
+    " pay_token "
+    pay_token: Token!
+    " buy_token "
+    buy_token: Token!
+    " pay_token hour statistics "
+    hourPayToken: HourToken!
+    " pay_token hour statistics "
+    hourBuyToken: HourToken!
+    " pay_token price - most recent trade price derived from buy_token "
+    pricePayToken: BigDecimal!
+    " buy_token price - most recent trade price derived from pay_token "
+    priceBuyToken: BigDecimal!
+    " volume in pay_token"
+    volumePayToken: BigInt!
+    " volume in buy_token "
+    volumeBuyToken: BigInt!
+    " total number of trades of that pair "
+    txCount: BigInt!
+    " total fees collected of pay_token for this pair "
+    payTokenFees: BigInt!
+    " total fees collected of buy_token for this pair "
+    buyTokenFees: BigInt!
+    " derived values"
+    swaps: [Swap!]! @derivedFrom(field: "hourPair")
+    openOffers: [OpenOffer!]! @derivedFrom(field: "hourPair")
+    offers: [Offer!]! @derivedFrom(field: "hourPair")
+    takers: [Taker!]! @derivedFrom(field: "hourPair")
+    trades: [Trade!]! @derivedFrom(field: "hourPair")
+} 
+
+type User @entity { 
+    " <user address> "
+    id: ID!
+    " derived values "
+    swaps: [Swap!]! @derivedFrom(field: "user")
+    openOffers: [OpenOffer!]! @derivedFrom(field: "user")
+    offers: [Offer!]! @derivedFrom(field: "user")
+    takers: [Taker!]! @derivedFrom(field: "user")
+}
+
+type Offer @entity { 
+    " <offer id hash> "
+    id: ID!
+    " time of transaction "
+    timestamp: BigInt!
+    " track to User entity "
+    user: User!
+    " track to Transaction entity "
+    transaction: Transaction!
+    " track to Pair entity "
+    pair: Pair!
+    " track to DayPair entity "
+    dayPair: DayPair!
+    " track to HourPair entity "
+    hourPair: HourPair!
+    " asset the taker is paying in "
+    takeAsset: Token!
+    " asset the maker is selling "
+    makeAsset: Token!
+    " amout of takeAsset for makeAsset "
+    takeAmount: BigInt!
+    " amount of makeAsset for takeAsset "
+    makeAmount: BigInt!
+    " price of takeAmount in ETH "
+    priceTakeAssetETH: HistoricalAssetPriceETH!
+    " price of makeAmount in ETH "
+    priceMakeAssetETH: HistoricalAssetPriceETH!
+    " price of takeAmount in ETH "
+    priceTakeAssetUSD: HistoricalAssetPriceUSD!
+    " price of makeAmount in ETH "
+    priceMakeAssetUSD: HistoricalAssetPriceUSD!
+    " amount received of takeAsset "
+    receivedTakeAmount: BigInt!
+    " amount of partial fill on makeAsset "
+    partialFillMakeAmount: BigInt!
+    " variable for if offer is killed "
+    killed: Boolean!
+    " variable for if the offer is filled "
+    filled: Boolean!
+    " when the order is killed or filled "
+    timeRemoved: BigInt!
+}
+
+type OpenOffer @entity { 
+    " <offer id hash> "
+    id: ID!
+    " time of transaction "
+    timestamp: BigInt!
+    " track to User entity "
+    user: User!
+    " track to Transaction entity "
+    transaction: Transaction!
+    " track to Pair entity "
+    pair: Pair!
+    " track to DayPair entity "
+    dayPair: DayPair!
+    " track to HourPair entity "
+    hourPair: HourPair!
+    " asset the taker is paying in "
+    takeAsset: Token!
+    " asset the maker is selling "
+    makeAsset: Token!
+    " amout of takeAsset for makeAsset "
+    takeAmount: BigInt!
+    " amount of makeAsset for takeAsset "
+    makeAmount: BigInt!
+    " price of takeAmount in ETH "
+    priceTakeAssetETH: HistoricalAssetPriceETH!
+    " price of makeAmount in ETH "
+    priceMakeAssetETH: HistoricalAssetPriceETH!
+    " price of takeAmount in ETH "
+    priceTakeAssetUSD: HistoricalAssetPriceUSD!
+    " price of makeAmount in ETH "
+    priceMakeAssetUSD: HistoricalAssetPriceUSD!
+    " amount received of takeAsset "
+    receivedTakeAmount: BigInt!
+    " amount of partial fill on makeAsset "
+    partialFillMakeAmount: BigInt!
+} 
+
+type Swap @entity { 
+    " <transaction hash> "
+    id: ID!
+    " time of transaction "
+    timestamp: BigInt!
+    " track to User entity "
+    user: User!
+    " track to Transaction entity "
+    transaction: Transaction!
+    " track to Pair entity "
+    pair: Pair!
+    " track to DayPair entity "
+    dayPair: DayPair!
+    " track to HourPair entity "
+    hourPair: HourPair!
+    " asset the taker is paying in "
+    takeAsset: Token!
+    " asset the maker is selling "
+    makeAsset: Token!
+    " amout of takeAsset for makeAsset "
+    takeAmount: BigInt!
+    " amount of makeAsset for takeAsset "
+    makeAmount: BigInt!
+    " price of takeAmount in ETH "
+    priceTakeAssetETH: HistoricalAssetPriceETH!
+    " price of makeAmount in ETH "
+    priceMakeAssetETH: HistoricalAssetPriceETH!
+    " price of takeAmount in ETH "
+    priceTakeAssetUSD: HistoricalAssetPriceUSD!
+    " price of makeAmount in ETH "
+    priceMakeAssetUSD: HistoricalAssetPriceUSD!
+    " fee for the taker "
+    takerFee: BigInt!
+} 
+
+type Taker @entity { 
+    " <transaction hash> "
+    id: ID!
+    " time of transaction "
+    timestamp: BigInt!
+    " track to User entity "
+    user: User!
+    " track to Transaction entity "
+    transaction: Transaction!
+    " track to Pair entity "
+    pair: Pair!
+    " track to DayPair entity "
+    dayPair: DayPair!
+    " track to HourPair entity "
+    hourPair: HourPair!
+    " asset the taker is paying in "
+    takeAsset: Token!
+    " asset the maker is selling "
+    makeAsset: Token!
+    " amout of takeAsset for makeAsset "
+    takeAmount: BigInt!
+    " amount of makeAsset for takeAsset "
+    makeAmount: BigInt!
+    " price of takeAmount in ETH "
+    priceTakeAssetETH: HistoricalAssetPriceETH!
+    " price of makeAmount in ETH "
+    priceMakeAssetETH: HistoricalAssetPriceETH!
+    " price of takeAmount in ETH "
+    priceTakeAssetUSD: HistoricalAssetPriceUSD!
+    " price of makeAmount in ETH "
+    priceMakeAssetUSD: HistoricalAssetPriceUSD!
+    " fee for the taker "
+    takerFee: BigInt!
+    " maker entity of the trade "
+    maker: Offer!
+} 
+
+type Trade @entity {
+    " <transaction hash> "
+    id: ID!
+    " time of transaction "
+    timestamp: BigInt!
+    " track to transaction entity "
+    transaction: Transaction!
+    "track to full pair entity "
+    fullPair: FullPair!
+    " track to Pair entity - Pair ID <token0>#<token1> maps accordingly "
+    pair: Pair!
+    " track to MonthPair entity "
+    monthPair: MonthPair!
+    " track to WeekPair entity "
+    weekPair: WeekPair!
+    " track to DayPair entity "
+    dayPair: DayPair!
+    " track to HourPair entity "
+    hourPair: HourPair!
+    " asset the taker is paying in "
+    takeAsset: Token!
+    " asset the maker is selling "
+    makeAsset: Token!
+    " amout of takeAsset for makeAsset "
+    takeAmount: BigInt!
+    " amount of makeAsset for takeAsset "
+    makeAmount: BigInt!
+    " price of takeAmount in ETH "
+    priceTakeAssetETH: HistoricalAssetPriceETH!
+    " price of makeAmount in ETH "
+    priceMakeAssetETH: HistoricalAssetPriceETH!
+    " price of takeAmount in ETH "
+    priceTakeAssetUSD: HistoricalAssetPriceUSD!
+    " price of makeAmount in ETH "
+    priceMakeAssetUSD: HistoricalAssetPriceUSD!
+    " number of transactions matched "
+    tradeMatched: Boolean!
+}
+
+type AssetPriceETH @entity {
+    " <asset>#<ETH> "
+    id: ID!
+    " time of last price update "
+    timestamp: BigInt!
+    " asset "
+    asset: Token!
+    " price of asset in ETH "
+    assetPriceETH: BigDecimal!
+    " most recent price of asset in ETH "
+    lastPriceETH: HistoricalAssetPriceETH!
+}
+
+type AssetPriceUSD @entity {
+    " <asset>#<ETH> "
+    id: ID!
+    " time of last price update "
+    timestamp: BigInt!
+    " asset "
+    asset: Token!
+    " price of asset in ETH "
+    assetPriceUSD: BigDecimal!
+    " most recent price of asset in USD "
+    lastPriceUSD: HistoricalAssetPriceUSD!
+}
+
+type HistoricalAssetPriceETH @entity {
+    " <asset>#<ETH>#<timestamp> "
+    id: ID!
+    " time of last price update "
+    timestamp: BigInt!
+    " asset "
+    asset: Token!
+    " asset amount "
+    assetAmount: BigInt!
+    " eth amount "
+    ethAmount: BigInt!
+    " price of asset in ETH "
+    historicalAssetPriceETH: BigDecimal!
+}
+
+type HistoricalAssetPriceUSD @entity {
+    " <asset>#<ETH>#<timestamp> "
+    id: ID!
+    " time of last price update "
+    timestamp: BigInt!
+    " asset "
+    asset: Token!
+    " usd asset "
+    usdAsset: Token
+    " asset amount "
+    assetAmount: BigInt!
+    " usd amount "
+    usdAmount: BigInt!
+    " price of asset in USD "
+    historicalAssetPriceUSD: BigDecimal!
+}

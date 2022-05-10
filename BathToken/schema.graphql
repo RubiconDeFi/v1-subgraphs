@@ -1,0 +1,255 @@
+type BathHouse @entity { 
+    " <BathHouse contract address> "
+    id: ID!
+    " bath pools "
+    pools: [Pool!]! @derivedFrom(field: "bathHouse")
+}
+
+# profile for a single liquidity provider
+type LiquidityProvider @entity { 
+    " <user adddress> "
+    id: ID!
+    " derived fields"
+    positions: [PoolPosition!]! @derivedFrom(field: "liquidityProvider")
+    deposits: [Deposit!]! @derivedFrom(field: "liquidityProvider")
+    withdraws: [Withdraw!]! @derivedFrom(field: "liquidityProvider")
+}
+
+# profile for a liquidity provider position in an individual pools
+type PoolPosition @entity {
+    " <user address>#<pool underlying asset address> "
+    id: ID!
+    " the liquidity provider is "
+    liquidityProvider: LiquidityProvider!
+    " the pool is "
+    pool: Pool!
+    " current bathToken balance "
+    bathTokenAmount: BigInt!
+    " total value of pool deposits "
+    totalDeposited: BigInt!
+    " total value of pool withdraws "
+    totalWithdrawn: BigInt!
+}
+
+# current pool data
+type Pool @entity { 
+    " <pool underlying asset address> " 
+    id: ID! 
+    " derived from "
+    bathHouse: BathHouse!
+    " pool address "
+    address: String!
+    " pool name "
+    name: String!
+    " pool asset address "
+    underlyingToken: String!
+    " creation time "
+    createdAtTimestamp: BigInt!
+    " block pool was created at "
+    createdAtBlockNumber: BigInt!
+    " address of bath token creator "
+    bathTokenCreator: String!
+    " pool underlying balance (amount in pool and on books) "
+    underlyingBalance: BigInt!
+    " amount of pool assets outstanding on the orderbook "
+    outstandingAmount: BigInt!
+    " shares outstanding (BathTokens) "
+    tokenSupply: BigInt!
+    " total value of pool deposits "
+    totalDeposited: BigInt!
+    " total value of pool withdraws "
+    totalWithdrawn: BigInt!
+    " BathToken Price: total suppply / underlying balance "
+    price: BigDecimal!
+    " total earned from market making activity "
+    totalEarned: BigInt!
+    " daily snapshots of pool data "
+    poolDayData: [PoolDayData!]! @derivedFrom(field: "pool")
+    " hourly snapshots of pool data "
+    poolHourData: [PoolHourData!]! @derivedFrom(field: "pool")
+    " derived fields "
+    deposits: [Deposit!]! @derivedFrom(field: "pool")
+    withdraws: [Withdraw!]! @derivedFrom(field: "pool")
+    PoolBuffers: [PoolBuffer!]! @derivedFrom(field: "pool")
+}
+
+# Data accumulated and condensed into day stats for each pool
+type PoolDayData @entity {
+    " <pool underlying asset address>#<timestamp rounded to current day by dividing by 86400> "
+    id: ID! 
+    " timestamp "
+    date: BigInt!
+    " liquidity pool "
+    pool: Pool!
+    " pool name "
+    name: String!
+    " pool asset address "
+    underlyingToken: String!
+    " block pool was created at "
+    startedAtBlockNumber: BigInt!
+    " pool underlying balance (amount in pool and on books) "
+    underlyingBalance: BigInt!
+    " amount of pool assets outstanding on the orderbook "
+    outstandingAmount: BigInt!
+    " shares outstanding (BathTokens)"
+    tokenSupply: BigInt!
+    " number of bathtokens minted "
+    tokensMinted: BigInt!
+    " number of bathtokens burned "
+    tokensBurned: BigInt!
+    " total value of pool deposits "
+    totalDeposited: BigInt!
+    " total value of pool withdraws "
+    totalWithdrawn: BigInt!
+    " BathToken Price: total suppply / underlying balance"
+    price: BigDecimal!
+    " total earned from market making activity "
+    totalEarned: BigInt!
+    " derived fields "
+    deposits: [Deposit!]! @derivedFrom(field: "poolDayData")
+    withdraws: [Withdraw!]! @derivedFrom(field: "poolDayData")
+    PoolBufferDay: [PoolBufferDay!]! @derivedFrom(field: "poolDayData")
+}
+
+# Data accumulated and condensed into hourly stats for each pool
+type PoolHourData @entity {
+    " <pool underlying asset address>#<timestamp rounded to current day by dividing by 3600> "
+    id: ID! 
+    " timestamp "
+    periodStartUnix: BigInt!
+    " liquidity pool "
+    pool: Pool!
+    " pool name "
+    name: String!
+    " pool asset address"
+    underlyingToken: String!
+    " block pool was created at "
+    startedAtBlockNumber: BigInt!
+    " pool underlying balance (amount in pool and on books) "
+    underlyingBalance: BigInt!
+    " amount of pool assets outstanding on the orderbook "
+    outstandingAmount: BigInt!
+    " shares outstanding (BathTokens) "
+    tokenSupply: BigInt!
+    " number of bathtokens minted "
+    tokensMinted: BigInt!
+    " number of bathtokens burned "
+    tokensBurned: BigInt!
+    " total value of pool deposits "
+    totalDeposited: BigInt!
+    " total value of pool withdraws "
+    totalWithdrawn: BigInt!
+    " BathToken Price: total suppply / underlying balance "
+    price: BigDecimal!
+    " total earned from market making activity "
+    totalEarned: BigInt!
+    " derived fields "
+    deposits: [Deposit!]! @derivedFrom(field: "poolHourData")
+    withdraws: [Withdraw!]! @derivedFrom(field: "poolHourData")
+    PoolBufferHour: [PoolBufferHour!]! @derivedFrom(field: "poolHourData")
+}
+
+type PoolBuffer @entity {
+    " <pool underlying asset address>#<buffer asset address> "
+    id: ID!
+    " the pool is"
+    pool: Pool!
+    " token address of asset in buffer "
+    token: String!
+    " name of asset in buffer "
+    name: String!
+    " amount of token in buffer "
+    bufferAmount: BigInt!
+}
+
+
+type PoolBufferDay @entity {
+    " <pool underlying asset address>#<buffer asset address>#<timestamp rounded to current day by dividing by 86400> "
+    id: ID!
+    " timestamp "
+    date: BigInt!
+    " the pool is "
+    poolDayData: PoolDayData!
+    " token address of asset in buffer "
+    token: String!
+    " name of asset in buffer "
+    name: String!
+    " amount of token in buffer "
+    bufferAmount: BigInt!
+}
+
+type PoolBufferHour @entity {
+    " <pool underlying asset address>#<buffer asset address>#<timestamp rounded to current day by dividing by 3600> "
+    id: ID!
+    " timestamp "
+    date: BigInt!
+    " the pool is "
+    poolHourData: PoolHourData!
+    " token address of asset in buffer "
+    token: String!
+    " name of asset in buffer "
+    name: String!
+    " amount of token in buffer "
+    bufferAmount: BigInt!
+}
+
+type Transaction @entity {
+    " <txn hash> "
+    id: ID!
+    " block txn was included in "
+    blockNumber: BigInt!
+    " timestamp txn was confirmed "
+    timestamp: BigInt!
+    " gas used during txn execution "
+    gasUsed: BigInt!
+    gasPrice: BigInt!
+    " derived values "
+    deposits: [Deposit!]! @derivedFrom(field: "transaction")
+    withdraws: [Withdraw!]! @derivedFrom(field: "transaction")
+}
+
+type Deposit @entity {
+    " <transaction hash>#<user address> "
+    id: ID!
+    " time of txn "
+    timestamp: BigInt!
+    " transaction details "
+    transaction: Transaction!
+    " pool to deposit in "
+    pool: Pool!
+    " amount deposited into pool "
+    depositAmount: BigInt!
+    " Bath Tokens received "
+    bathTokenAmount: BigInt! 
+    " BathToken Price: total suppply / underlying balance "
+    price: BigDecimal!
+    " liquidity provider "
+    liquidityProvider: LiquidityProvider!
+    " map to PoolDayData entity "
+    poolDayData: PoolDayData!
+    " map to PoolHourData entity "
+    poolHourData: PoolHourData!
+} 
+
+type Withdraw @entity {
+    " <transaction hash>#<user address> "
+    id: ID!
+    " time of txn "
+    timestamp: BigInt!
+    " transaction details "
+    transaction: Transaction!
+    " pool to withdraw from "
+    pool: Pool!
+    " amount withdrawn from the pool "
+    withdrawAmount: BigInt!
+    " Bath Tokens burned "
+    bathTokenBurned: BigInt! 
+    " BathToken Price: total suppply / underlying balance "
+    price: BigDecimal!
+    " liquidity provider "
+    liquidityProvider: LiquidityProvider!
+    " map to PoolDayData entity "
+    poolDayData: PoolDayData!
+    " map to PoolHourData entity "
+    poolHourData: PoolHourData!
+} 
